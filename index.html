@@ -1,3 +1,169 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>STAZIONE METEO ITIS E.FERMI</title>
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+   <style>
+       /* --- RESET E BASE --- */
+       * { box-sizing: border-box; }
+       body {
+           font-family: 'Poppins', sans-serif;
+           background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+           text-align: center;
+           padding: 30px;
+           min-height: 100vh;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center; /* Centra tutto orizzontalmente */
+           margin: 0;
+       }
+
+
+       h2 {
+           color: #333;
+           font-weight: 600;
+           margin-bottom: 40px;
+           letter-spacing: 1px;
+           text-transform: uppercase;
+       }
+
+
+       /* --- LAYOUT DASHBOARD --- */
+       .dashboard {
+           display: flex;
+           gap: 25px;
+           justify-content: center;
+           align-items: center; /* Allinea verticalmente al centro */
+           flex-wrap: wrap;
+           margin-bottom: 40px;
+           max-width: 1200px;
+       }
+
+
+       /* --- DESIGN STANDARD DELLE CARDS --- */
+       .card {
+           background: rgba(255, 255, 255, 0.95);
+           padding: 30px 20px;
+           border-radius: 20px;
+           width: 200px; /* Dimensione standard */
+           box-shadow: 0 10px 30px -5px rgba(0,0,0,0.15);
+           transition: all 0.3s ease;
+           position: relative;
+           border-top: 5px solid #ddd;
+       }
+
+
+       .card:hover {
+           transform: translateY(-10px);
+           box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+       }
+
+
+       /* --- SPECIFICO PER LA PRESSIONE (BIG) --- */
+       .card.pres-card {
+           width: 340px; /* MOLTO PIÙ LARGA */
+           padding: 40px 20px; /* Più alta */
+           border-top-width: 8px; /* Bordo più spesso */
+           order: 0; /* Se vuoi spostarla, cambia questo numero (su mobile aiuta) */
+       }
+
+
+       /* --- COLORI --- */
+       .card.temp-card { border-top-color: #ff7e5f; }
+       .card.temp-card .val { color: #ff5252; }
+
+
+       .card.hum-card { border-top-color: #00c6ff; }
+       .card.hum-card .val { color: #0072ff; }
+
+
+       .card.pres-card { border-top-color: #23d5ab; }
+       .card.pres-card .val { color: #009688; }
+
+
+       /* --- TESTI --- */
+       .lbl {
+           color: #888;
+           font-size: 0.85em;
+           text-transform: uppercase;
+           letter-spacing: 1.5px;
+           font-weight: 400;
+           display: block;
+           margin-bottom: 15px;
+       }
+
+
+       .val-container {
+           display: flex;
+           justify-content: center;
+           align-items: baseline;
+       }
+
+
+       .val {
+           font-size: 3em;
+           font-weight: 600;
+           line-height: 1;
+       }
+
+
+       /* Testo Gigante specifico per la pressione */
+       .pres-card .val {
+           font-size: 4.5em; /* Numero ENORME */
+       }
+
+
+       .unit {
+           font-size: 1.2em;
+           color: #aaa;
+           margin-left: 5px;
+           font-weight: 300;
+       }
+
+
+       /* --- LOG DEBUG DISCRETO --- */
+       #debug {
+           background: rgba(30, 30, 30, 0.85);
+           color: #aaffaa;
+           padding: 10px;
+           text-align: left;
+           font-family: 'Courier New', monospace;
+           height: 60px;
+           font-size: 11px;
+           overflow-y: scroll;
+           border-radius: 10px;
+           max-width: 600px;
+           width: 90%;
+           border: 1px solid rgba(255,255,255,0.1);
+           scrollbar-width: thin;
+       }
+   </style>
+</head>
+<body>
+
+
+   <h2>STAZIONE METEO ITIS E.FERMI</h2>
+
+
+   <div class="dashboard">
+       <div class="card temp-card">
+           <span class="lbl">Temperatura</span>
+           <div class="val-container">
+               <span id="temp" class="val">--</span> <span class="unit">°C</span>
+           </div>
+       </div>
+
+
+       <div class="card pres-card">
+           <span class="lbl">Pressione Atmosferica</span>
+           <div class="val-container">
+               <span id="pres" class="val">--</span> <span class="unit">hPa</span>
+           </div>
+       </div>
 
 
        <div class="card hum-card">
@@ -95,6 +261,3 @@
    </script>
 </body>
 </html>
-
-
-/* GR*/
