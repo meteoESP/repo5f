@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Meteo MQTT Dati Separati</title>
+    <meta charset="UTF-8">
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f6f9;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #1f3a93;
+            margin-bottom: 20px;
+        }
+        #status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #6c757d;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .data-box {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .data-box:hover {
+            transform: translateY(-5px);
+        }
+        .data-box h2 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .value {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #007bff;
+            display: block;
+        }
+        .unit {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: -10px;
+            display: block;
+        }
+        #temperatura-box { border-top: 5px solid #dc3545; }
+        #umidita-box { border-top: 5px solid #007bff; }
+        #pressione-box { border-top: 5px solid #28a745; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Dashboard Meteo in Tempo Reale</h1>
+    <div id="status">Connessione al broker...</div>
+
+    <div class="container">
+
+        <div class="data-box" id="temperatura-box">
+            <h2>🌡️ Temperatura</h2>
+            <span id="temperatura" class="value">N/D</span>
+            <span class="unit">°C</span>
+        </div>
+
+        <div class="data-box" id="umidita-box">
+            <h2>💧 Umidità</h2>
+            <span id="umidita" class="value">N/D</span>
+            <span class="unit">%</span>
+        </div>
+
+        <div class="data-box" id="pressione-box">
+            <h2>🧭 Pressione</h2>
+            <span id="pressione" class="value">N/D</span>
+            <span class="unit">hPa</span>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Configurazione (CORREZIONE DEI TOPIC)
+        const brokerUrl = 'wss://test.mosquitto.org:8081';
+
+        // I TUOI TOPIC CORRETTI: INIZIANO CON 'HOME'
+        const topicTemp = 'home/meteo/temperatura';
+        const topicHumi = 'home/meteo/umidita';
+        const topicPres = 'home/meteo/pressione';
+        const topicToSubscribe = 'home/meteo/#'; // Sottoscriviamo a tutti i topic sotto home/meteo
+
+        // 2. Connessione
+        const client = mqtt.connect(brokerUrl);
+
+        // Riferimenti agli elementi HTML
+        const statusDiv = document.getElementById('status');
+        const tempDiv = document.getElementById('temperatura');
+        const humiDiv = document.getElementById('umidita');
+        const presDiv = document.getElementById('pressione');
+
+
+        // 3. Callback quando connesso
+        client.on('connect', () => {
+            statusDiv.innerText = "✅ Connesso a " + brokerUrl;
+            console.log("Connesso, mi iscrivo a " + topicToSubscribe);
+            client.subscribe(topicToSubscribe);
+        });
+
+        // 4. Callback quando arriva un messaggio (LOGICA AGGIORNATA)
+        client.on('message', (topic, message) => {
+            const payload = message.toString();
+            // Tenta di convertire il valore numerico
+            let value = parseFloat(payload).toFixed(2);
+
+            // Aggiorna l'elemento corretto in base al topic
+            if (topic === topicTemp) {
+                tempDiv.innerText = value;
+            } else if (topic === topicHumi) {
+                humiDiv.innerText = value;
+            } else if (topic === topicPres) {
+                presDiv.innerText = value;
+            }
+        });
+
+        // 5. Gestione errore connessione
+        client.on('error', (err) => {
+            statusDiv.innerText = "❌ ERRORE: Connessione fallita. Vedi console.";
+            console.error("Errore MQTT:", err);
+            client.end();
+        });
+    </script>
+</body>
+</html>
